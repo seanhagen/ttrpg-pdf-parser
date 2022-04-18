@@ -2,12 +2,12 @@
     {
         "Name": "ONE",
         "Start": "Fusce sagittis",
-        "End": "lacinia eros.",
+        "End": "End of section one.",
         "Ord": 1
     },
     {
         "Name": "TWO",
-        "End": "id erat.",
+        "End": "End of section two.",
         "Start": "Aliquam erat",
         "Ord": 2
     }

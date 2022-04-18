@@ -7,17 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNumenera_CypherSplitLines(t *testing.T) {
+func TestItems_CypherSplitLines(t *testing.T) {
 	input := loadStringFromFile(t, "cypher-split-input.txt")
 	var expect []string
 	loadDataFromFile(t, "cypher-split-expect.json", &expect)
 
-	got := SplitCypherText(input)
+	var blankouts []string
+	loadDataFromFile(t, "new-artifacts-blankouts.json", &blankouts)
+
+	got := SplitCypherText(input, blankouts)
 
 	assert.Equal(t, expect, got)
 }
 
-func TestNumenera_Cypher(t *testing.T) {
+func TestItems_NewCypherFromLine(t *testing.T) {
 	tests := []struct {
 		Input  string
 		Expect *Cypher

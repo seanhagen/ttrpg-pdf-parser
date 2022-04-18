@@ -1,6 +1,7 @@
 package pdf
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,14 +24,14 @@ func TestPdf_Basics(t *testing.T) {
 	expectBlankouts := []string{
 		"Something in section one.",
 	}
-	assert.Equal(t, book.blankouts, expectBlankouts, "expected blankouts to be equal")
+	assert.Equal(t, book.GetBlankouts(), expectBlankouts, "expected blankouts to be equal")
 
 	err = book.LoadSectionBoundaries("testdata/boundaries.json")
 	assert.NoError(t, err)
 
 	expectBoundaries := sectionList{
-		{"ONE", "Fusce sagittis", "lacinia eros.", 1},
-		{"TWO", "Aliquam erat", "id erat.", 2},
+		{"ONE", "Fusce sagittis", "End of section one.", 1},
+		{"TWO", "Aliquam erat", "End of section two.", 2},
 	}
 	assert.Equal(t, book.sectionBoundaries, expectBoundaries, "expected boundaries to be equal")
 
@@ -38,7 +39,26 @@ func TestPdf_Basics(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, book.buf)
 
-	err = book.ParseSections()
+	fixes := SectionFixList{
+		{
+			Match: regexp.MustCompile(`([^\s.].*?)?📒+`),
+			Fix:   "\n\n$1⏱\n",
+		},
+		{
+			Match: regexp.MustCompile(`[^.]?📒\s*`),
+			Fix:   " ",
+		},
+		{
+			Match: regexp.MustCompile(`\s+⏱\s*`),
+			Fix:   " ",
+		},
+		{
+			Match: regexp.MustCompile(`⏱\s*`),
+			Fix:   "\n",
+		},
+	}
+
+	err = book.ParseSections(fixes)
 	assert.NoError(t, err)
 
 	expectSections := map[string]string{

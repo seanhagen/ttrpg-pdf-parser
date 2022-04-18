@@ -20,3 +20,8 @@ func (b *Book) LoadBlankoutsFromFile(path string) error {
 
 	return sc.Err()
 }
+
+// GetBlankouts ...
+func (b *Book) GetBlankouts() []string {
+	return b.blankouts
+}

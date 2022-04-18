@@ -1,51 +1,57 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/seanhagen/numenera/items"
 	"github.com/seanhagen/numenera/pdf"
 )
 
-const pdfPath = "./out/tech.pdf"
+var pdfPathFlag = flag.String("pdf", "", "path to the PDF file to parse")
+
+var fixes = pdf.SectionFixList{
+	{
+		Match: regexp.MustCompile(`([^\s.].*?)?📒+`),
+		Fix:   "\n\n$1⏱\n",
+	},
+	{
+		Match: regexp.MustCompile(`[^.]?📒\s*`),
+		Fix:   " ",
+	},
+	{
+		Match: regexp.MustCompile(`\s+⏱\s*`),
+		Fix:   " ",
+	},
+	{
+		Match: regexp.MustCompile(`⏱\s*`),
+		Fix:   "\n",
+	},
+}
+
+func init() {
+	flag.Parse()
+}
 
 func main() {
-	book, err := pdf.OpenBook(pdfPath)
-	if err != nil {
-		fmt.Printf("unable to open book '%v', error: %v\n", pdfPath, err)
+	if pdfPathFlag == nil || *pdfPathFlag == "" {
+		fmt.Printf("use -pdf to specify the PDF to parse!\n")
 		os.Exit(1)
 	}
 
-	err = book.LoadBlankoutsFromFile("./blankouts.txt")
+	book, err := prepareBook(*pdfPathFlag)
 	if err != nil {
-		fmt.Printf("Unable to load blankouts: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = book.LoadSectionBoundaries("./boundaries.json")
-	if err != nil {
-		fmt.Printf("Unable to load boundaries: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = book.Read()
-	if err != nil {
-		fmt.Printf("Unable to read PDF: %v\n", err)
-		os.Exit(1)
-	}
-
-	err = book.ParseSections()
-	if err != nil {
-		fmt.Printf("Unable to parse sections: %v\n", err)
+		fmt.Printf("Unable to get book '%v', error: %v\n", *pdfPathFlag, err)
 		os.Exit(1)
 	}
 
 	cypherTxt := book.GetSection("CYPHERS")
 	artifactTxt := book.GetSection("ARTIFACTS")
 
-	splitCypherLines := items.SplitCypherText(cypherTxt)
-	splitArtifactLines := items.SplitArtifactText(artifactTxt)
+	splitCypherLines := items.SplitCypherText(cypherTxt, book.GetBlankouts())
+	splitArtifactLines := items.SplitArtifactText(artifactTxt, book.GetBlankouts())
 
 	var cyphers []*items.Cypher
 	var artifacts []*items.Artifact
@@ -58,7 +64,7 @@ func main() {
 	}
 
 	for _, l := range splitArtifactLines {
-		a := items.NewAritfact(l)
+		a := items.NewAritfact(l, book.GetBlankouts())
 		if a != nil {
 			artifacts = append(artifacts, a)
 		}
@@ -83,13 +89,37 @@ func main() {
 		fmt.Printf("Effect:\n%v\n\n\n", c.Effect)
 	}
 
-	// fmt.Printf("\n\n\n\n========================================\n\n\n")
-	// fmt.Printf("Cyphers: \n%v\n", cypherTxt)
-	// fmt.Printf("\n\n\n\n========================================\n\n\n")
-	// fmt.Printf("Artifacts: \n%v\n", artifactTxt)
-	// fmt.Printf("\n\n\n\n========================================\n\n\n")
-	// litter.Config.FieldExclusions = regexp.MustCompile(`^pdf$|^buf$`)
-	// litter.Config.HidePrivateFields = false
-	// litter.Dump(book)
-	//	spew.Dump(book)
+	for _, a := range artifacts {
+		fmt.Printf("ARTIFACT: %v ( Level %v)\n------------------------------\n", a.Name, a.Level)
+		fmt.Printf("Form: %v\nDepletion: %v\nEffect:\n%v\n\n\n", a.Form, a.Depletion, a.Effect)
+	}
+}
+
+func prepareBook(path string) (*pdf.Book, error) {
+	book, err := pdf.OpenBook(path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open book '%v', error: %w", path, err)
+	}
+
+	err = book.LoadBlankoutsFromFile("./blankouts.txt")
+	if err != nil {
+		return nil, fmt.Errorf("unable to load blankouts: %w", err)
+	}
+
+	err = book.LoadSectionBoundaries("./boundaries.json")
+	if err != nil {
+		return nil, fmt.Errorf("Unable to load boundaries: %w", err)
+	}
+
+	err = book.Read()
+	if err != nil {
+		return nil, fmt.Errorf("unable to read PDF: %w", err)
+	}
+
+	err = book.ParseSections(fixes)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse sections: %w", err)
+	}
+
+	return book, nil
 }

@@ -64,6 +64,8 @@ func (b *Book) Read() error {
 	y := int(math.Round(b.pdf.Page(1).Content().Text[0].Y))
 	py := y
 
+	printBuf := bytes.NewBuffer(nil)
+
 	for i := 1; i <= numPages; i++ {
 		pg := b.pdf.Page(i)
 		for _, t := range pg.Content().Text {
@@ -71,11 +73,10 @@ func (b *Book) Read() error {
 			if y != py {
 				py = y
 				buf.WriteString(readPDFNewLine)
-				// buf.WriteString("\n")
+				printBuf.WriteString(readPDFNewLine)
 			}
 			buf.WriteString(t.S)
-			// if t.S != "\n" {
-			// }
+			printBuf.WriteString(t.S)
 		}
 	}
 
