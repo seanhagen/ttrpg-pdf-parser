@@ -24,35 +24,37 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
 )
 
-// numeneraCmd represents the numenera command
-var numeneraCmd = &cobra.Command{
-	Use:   "numenera",
-	Short: "You must specify the type of resource to parse.",
-	Long: `Numenera is the parent command for all sub-commands related to
-resources in the Numenera TTRPG:
+// printCmd represents the print command
+var printCmd = &cobra.Command{
+	Use:   "print",
+	Short: "Outputs the text of the PDF into a normal text file",
+	Long: `Print reads all the text from the provided PDF, and outputs
+all the text found within into a .txt file.
 
- - cyphers
- - artifacts
- - oddities
- - creatures
-
-Each of these has their own related sub-command for parsing that type of
-resource.`,
+This is handy when trying to build blankouts or section boundaries,
+as the text that tpp is able to read isn't necessarily what you see
+when you look a PDF!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		_ = cmd.Help()
-	},
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		err := book.ParseSections()
-		if err != nil {
-			return fmt.Errorf("unable to parse sections: %w", err)
-		}
-		return nil
+		spew.Dump(cmd.Args)
+
+		fmt.Println("print called")
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(numeneraCmd)
+	rootCmd.AddCommand(printCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// printCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// printCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

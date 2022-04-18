@@ -3,44 +3,10 @@ package game
 import (
 	"bytes"
 	"math"
-	"os"
-
-	"github.com/ledongthuc/pdf"
+	"strings"
 )
 
 const readPDFNewLine string = "📒📒\n"
-
-// Book ...
-type Book struct {
-	file *os.File
-	pdf  *pdf.Reader
-
-	buf *bytes.Buffer
-
-	sectionBoundaries sectionList
-	sections          map[string]string
-	sectionFixes      SectionFixList
-
-	blankouts []string
-}
-
-// OpenBook ...
-func OpenBook(path string) (*Book, error) {
-	f, r, err := pdf.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	b := &Book{
-		file:              f,
-		pdf:               r,
-		sectionBoundaries: sectionList{},
-		sections:          map[string]string{},
-		blankouts:         []string{},
-	}
-
-	return b, nil
-}
 
 // Close  ...
 func (b *Book) Close() error {
@@ -76,15 +42,37 @@ func (b *Book) Read() error {
 				py = y
 				buf.WriteString(readPDFNewLine)
 				printBuf.WriteString(readPDFNewLine)
+				// fmt.Printf("newline: %v\n", readPDFNewLine)
+
+				if t.S != "\n" {
+					// fmt.Printf("is newline!------------------------------\n")
+					buf.WriteString("\n")
+					printBuf.WriteString("\n")
+				}
 			}
 			buf.WriteString(t.S)
 			printBuf.WriteString(t.S)
+			// x := int(math.Round(t.X))
+			// fmt.Printf("S: %v\t\tC: %v, %v\n", t.S, x, y)
 		}
 	}
 
 	// sep := "=============================="
 	// fmt.Printf("book:\n\n%v\n\n%v\n\n%v\n\n", sep, printBuf.String(), sep)
 
-	b.buf = buf
+	c := buf.String()
+	c = strings.ReplaceAll(c, readPDFNewLine, "")
+	c = strings.ReplaceAll(c, "\n\n", "\n")
+
+	b.buf = bytes.NewBufferString(c)
 	return nil
+}
+
+// Contents ...
+func (b *Book) Contents() string {
+	// c := b.buf.String()
+	// c = strings.ReplaceAll(c, readPDFNewLine, "")
+	// c = strings.ReplaceAll(c, "\n\n", "\n")
+
+	return b.buf.String()
 }

@@ -21,6 +21,8 @@ const (
 	endFmt   = "%v\n\n===== END %v =====\n\n"
 
 	unknownSection = "unknown section"
+
+	sep = "\n\n------------------------------\n\n"
 )
 
 // LoadSectionFixes ...
@@ -43,16 +45,20 @@ func (b *Book) ParseSections() error {
 		return fmt.Errorf("buffer is nil, have you called Read()?")
 	}
 	txt := b.buf.String()
+	// fmt.Printf("\tparse sections start text: %v%v%v", sep, txt, sep)
 
 	for _, f := range b.sectionFixes {
 		txt = f.Match.ReplaceAllString(txt, f.Fix)
 	}
+	// fmt.Printf("\tpost-section-fixes:%v%v%v", sep, txt, sep)
 
 	txt = strings.ReplaceAll(txt, "\n", " - ")
+	// fmt.Printf("\tpost-replace-newlines:%v%v%v", sep, txt, sep)
 
 	for _, r := range b.blankouts {
 		txt = strings.ReplaceAll(txt, r, " ")
 	}
+	// fmt.Printf("\tpost-replace-blankouts:%v%v%v", sep, txt, sep)
 
 	sort.Sort(b.sectionBoundaries)
 
@@ -60,6 +66,8 @@ func (b *Book) ParseSections() error {
 		txt = strings.ReplaceAll(txt, sec.Start, fmt.Sprintf(startFmt, sec.Name, sec.Start))
 		txt = strings.ReplaceAll(txt, sec.End, fmt.Sprintf(endFmt, "", sec.Name))
 	}
+
+	// fmt.Printf("\tsectionized text: %v%v%v", sep, txt, sep)
 
 	findings := sectionHeaderRE.FindAllStringSubmatch(txt, -1)
 

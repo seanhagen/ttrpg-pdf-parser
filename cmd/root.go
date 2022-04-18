@@ -86,29 +86,30 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("unable to open book '%v', error: %w", pdfPath, err)
 		}
 
-		err = book.LoadBlankoutsFromFile(blankoutsPath)
-		if err != nil {
-			return fmt.Errorf("unable to load blankouts: %w", err)
+		if blankoutsPath != "" {
+			err = book.LoadBlankoutsFromFile(blankoutsPath)
+			if err != nil {
+				return fmt.Errorf("unable to load blankouts: %w", err)
+			}
 		}
 
-		err = book.LoadSectionBoundaries(sectionsPath)
-		if err != nil {
-			return fmt.Errorf("unable to load boundaries: %w", err)
+		if sectionsPath != "" {
+			err = book.LoadSectionBoundaries(sectionsPath)
+			if err != nil {
+				return fmt.Errorf("unable to load boundaries: %w", err)
+			}
 		}
 
-		err = book.LoadSectionFixes(fixesPath)
-		if err != nil {
-			return fmt.Errorf("unable to load section fixes: %w", err)
+		if fixesPath != "" {
+			err = book.LoadSectionFixes(fixesPath)
+			if err != nil {
+				return fmt.Errorf("unable to load section fixes: %w", err)
+			}
 		}
 
 		err = book.Read()
 		if err != nil {
 			return fmt.Errorf("unable to read PDF: %w", err)
-		}
-
-		err = book.ParseSections()
-		if err != nil {
-			return fmt.Errorf("unable to parse sections: %w", err)
 		}
 
 		return nil
