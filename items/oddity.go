@@ -9,15 +9,15 @@ var isOddityRE = regexp.MustCompile(`^\d+. `)
 
 var (
 	oddityFixes = []*regexp.Regexp{
-		regexp.MustCompile(`📒📒\s(\d+)\.\s`),
-		regexp.MustCompile(`📒📒\s📒📒.*`),
-		regexp.MustCompile(`📒📒\s`),
+		regexp.MustCompile(`(\d+)\.\s`),
+		// regexp.MustCompile(`📒📒\s📒📒.*`),
+		// regexp.MustCompile(`📒📒\s`),
 	}
 
 	oddityReplace = []string{
-		"\n\n$1⏱ ",
-		"",
-		"",
+		"\n\n$1. ",
+		// "",
+		// " ",
 	}
 )
 
@@ -44,13 +44,23 @@ func SplitOddityText(input string, blankouts []string) []string {
 		input = f.ReplaceAllString(input, oddityReplace[i])
 	}
 
+	check := strings.Split(input, "\n")
 	var lines []string
-	for _, v := range strings.Split(input, "\n") {
+	for _, v := range check {
 		v = strings.ReplaceAll(v, "\n", " ")
 
 		if isOddityRE.MatchString(v) {
 			v = isOddityRE.ReplaceAllString(v, "")
 			v = strings.TrimSpace(v)
+			tmp := strings.Split(v, " ")
+			var g []string
+			for _, x := range tmp {
+				x = strings.TrimSpace(x)
+				if x != "" {
+					g = append(g, x)
+				}
+			}
+			v = strings.Join(g, " ")
 			lines = append(lines, v)
 		}
 	}
