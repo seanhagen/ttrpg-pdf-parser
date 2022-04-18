@@ -22,15 +22,21 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
+)
+
+var (
+	printOutputPath string
 )
 
 // printCmd represents the print command
 var printCmd = &cobra.Command{
-	Use:   "print",
+	Use:   "print <input> <output>",
 	Short: "Outputs the text of the PDF into a normal text file",
 	Long: `Print reads all the text from the provided PDF, and outputs
 all the text found within into a .txt file.
@@ -38,23 +44,37 @@ all the text found within into a .txt file.
 This is handy when trying to build blankouts or section boundaries,
 as the text that tpp is able to read isn't necessarily what you see
 when you look a PDF!`,
-	Run: func(cmd *cobra.Command, args []string) {
-		spew.Dump(cmd.Args)
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 2 {
+			return cmd.Help()
+		}
+		printOutputPath = args[1]
 
-		fmt.Println("print called")
+		if printOutputPath == "" {
+			return fmt.Errorf("")
+		}
+		return nil
+	},
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c := bytes.NewBufferString(book.Contents())
+
+		of, err := os.OpenFile(printOutputPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+		if err != nil {
+			return fmt.Errorf("unable to open output file '%v', error: %w", printOutputPath, err)
+		}
+
+		_, err = io.Copy(of, c)
+		if err != nil {
+			return fmt.Errorf("unable to write to file: %w", err)
+		}
+
+		fmt.Println("copy complete!")
+
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(printCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// printCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// printCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

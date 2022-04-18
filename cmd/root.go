@@ -49,20 +49,23 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "tpp",
+	Use:   "tpp <pdf>",
 	Short: "TTRPG PDF Parser: Pull items & creatures out of TTRPG PDFs",
-	// 	Long: `A longer description that spans multiple lines and likely contains
-	// examples and usage of using your application. For example:
+	Long: `Tabletop RPG PDF Parser!
 
-	// Cobra is a CLI library for Go that empowers applications.
-	// This application is a tool to generate the needed files
-	// to quickly create a Cobra application.`,
+Parser that can pull items & creatures out of
+PDFs.`,
 
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
+		pdfPath = args[0]
+
 		writers := []io.Writer{}
 
 		if outputToFile {
@@ -124,9 +127,6 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().
-		StringVar(&pdfPath, "pdf", "", "path to PDF file to parse")
-
-	rootCmd.PersistentFlags().
 		StringVar(&blankoutsPath, "blankouts", "", "path to TXT file containing lines to remove from PDF text")
 
 	rootCmd.PersistentFlags().
@@ -143,8 +143,4 @@ func init() {
 
 	rootCmd.PersistentFlags().
 		StringVar(&outputFilePath, "file-path", "./output.txt", "path to a file to write the resources to (default: output.txt)")
-
-	// // Cobra also supports local flags, which will only run
-	// // when this action is called directly.
-	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
