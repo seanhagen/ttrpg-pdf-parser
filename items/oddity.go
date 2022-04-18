@@ -10,14 +10,10 @@ var isOddityRE = regexp.MustCompile(`^\d+. `)
 var (
 	oddityFixes = []*regexp.Regexp{
 		regexp.MustCompile(`(\d+)\.\s`),
-		// regexp.MustCompile(`📒📒\s📒📒.*`),
-		// regexp.MustCompile(`📒📒\s`),
 	}
 
 	oddityReplace = []string{
 		"\n\n$1. ",
-		// "",
-		// " ",
 	}
 )
 
