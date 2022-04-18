@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/seanhagen/ttrpg-pdf-parser/items"
+	"github.com/seanhagen/ttrpg-pdf-parser/game/numenera"
 	"github.com/spf13/cobra"
 )
 
@@ -71,11 +71,11 @@ to quickly create a Cobra application.`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cypherTxt := book.GetSection("CYPHERS")
-		splitCypherLines := items.SplitCypherText(cypherTxt, book.GetBlankouts())
+		splitCypherLines := numenera.SplitCypherText(cypherTxt, book.GetBlankouts())
 
-		var cyphers []*items.Cypher
+		var cyphers []*numenera.Cypher
 		for _, l := range splitCypherLines {
-			c := items.NewCypher(l)
+			c := numenera.NewCypher(l)
 			if c != nil {
 				cyphers = append(cyphers, c)
 			}

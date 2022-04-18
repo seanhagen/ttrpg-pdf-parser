@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/seanhagen/ttrpg-pdf-parser/items"
+	"github.com/seanhagen/ttrpg-pdf-parser/game/numenera"
 	"github.com/spf13/cobra"
 )
 
@@ -70,11 +70,11 @@ to quickly create a Cobra application.`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		artifactTxt := book.GetSection("ARTIFACTS")
-		splitArtifactLines := items.SplitArtifactText(artifactTxt, book.GetBlankouts())
+		splitArtifactLines := numenera.SplitArtifactText(artifactTxt, book.GetBlankouts())
 
-		var artifacts []*items.Artifact
+		var artifacts []*numenera.Artifact
 		for _, l := range splitArtifactLines {
-			c := items.NewArtifact(l, []string{})
+			c := numenera.NewArtifact(l, []string{})
 			if c != nil {
 				artifacts = append(artifacts, c)
 			}

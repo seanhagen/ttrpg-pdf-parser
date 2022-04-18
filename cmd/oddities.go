@@ -26,7 +26,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/seanhagen/ttrpg-pdf-parser/items"
+	"github.com/seanhagen/ttrpg-pdf-parser/game/numenera"
 	"github.com/spf13/cobra"
 )
 
@@ -70,11 +70,11 @@ to quickly create a Cobra application.`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		oddityTxt := book.GetSection("ODDITIES")
-		splitOddityLines := items.SplitOddityText(oddityTxt, book.GetBlankouts())
+		splitOddityLines := numenera.SplitOddityText(oddityTxt, book.GetBlankouts())
 
-		var oddities []*items.Oddity
+		var oddities []*numenera.Oddity
 		for _, l := range splitOddityLines {
-			c := items.NewOddity(l, book.GetBlankouts())
+			c := numenera.NewOddity(l, book.GetBlankouts())
 			if c != nil {
 				oddities = append(oddities, c)
 			}

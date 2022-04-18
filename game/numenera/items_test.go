@@ -1,4 +1,4 @@
-package items
+package numenera
 
 import (
 	"encoding/json"

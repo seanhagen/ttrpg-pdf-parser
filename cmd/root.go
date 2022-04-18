@@ -26,7 +26,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/seanhagen/ttrpg-pdf-parser/pdf"
+	"github.com/seanhagen/ttrpg-pdf-parser/game"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +44,7 @@ var (
 	outputToStdout bool
 	outputToFile   bool
 
-	book *pdf.Book
+	book *game.Book
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -81,7 +81,7 @@ var rootCmd = &cobra.Command{
 		output = io.MultiWriter(writers...)
 
 		var err error
-		book, err = pdf.OpenBook(pdfPath)
+		book, err = game.OpenBook(pdfPath)
 		if err != nil {
 			return fmt.Errorf("unable to open book '%v', error: %w", pdfPath, err)
 		}
