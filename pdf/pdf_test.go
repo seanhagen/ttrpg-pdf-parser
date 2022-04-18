@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPdf_Basics(t *testing.T) {
@@ -12,31 +12,31 @@ func TestPdf_Basics(t *testing.T) {
 	var err error
 
 	book, err = OpenBook("testdata/test.pdf")
-	assert.NotNil(t, book.sectionBoundaries)
-	assert.NotNil(t, book.sections)
-	assert.NotNil(t, book.blankouts)
+	require.NotNil(t, book.sectionBoundaries)
+	require.NotNil(t, book.sections)
+	require.NotNil(t, book.blankouts)
 
-	assert.NotNil(t, book, "expected Book not to be nil")
-	assert.NoError(t, err, "expected no error")
+	require.NotNil(t, book, "expected Book not to be nil")
+	require.NoError(t, err, "expected no error")
 
 	err = book.LoadBlankoutsFromFile("testdata/blankouts.txt")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	expectBlankouts := []string{
 		"Something in section one.",
 	}
-	assert.Equal(t, book.GetBlankouts(), expectBlankouts, "expected blankouts to be equal")
+	require.Equal(t, book.GetBlankouts(), expectBlankouts, "expected blankouts to be equal")
 
 	err = book.LoadSectionBoundaries("testdata/boundaries.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expectBoundaries := sectionList{
 		{"ONE", "Fusce sagittis", "End of section one.", 1},
 		{"TWO", "Aliquam erat", "End of section two.", 2},
 	}
-	assert.Equal(t, book.sectionBoundaries, expectBoundaries, "expected boundaries to be equal")
+	require.Equal(t, book.sectionBoundaries, expectBoundaries, "expected boundaries to be equal")
 
 	err = book.LoadSectionFixes("testdata/fixes.json")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fixes := SectionFixList{
 		{
@@ -57,14 +57,14 @@ func TestPdf_Basics(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, fixes, book.sectionFixes)
+	require.Equal(t, fixes, book.sectionFixes)
 
 	err = book.Read()
-	assert.NoError(t, err)
-	assert.NotNil(t, book.buf)
+	require.NoError(t, err)
+	require.NotNil(t, book.buf)
 
 	err = book.ParseSections()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expectSections := map[string]string{
 		"ONE": "Fusce sagittis, libero non molestie mollis, magna orci ultrices dolor, at vulputate neque nulla lacinia eros.",
@@ -73,13 +73,13 @@ func TestPdf_Basics(t *testing.T) {
 
 	for section, expect := range expectSections {
 		got := book.GetSection(section)
-		assert.Equal(t, expect, got, "expected section to be equal")
+		require.Equal(t, expect, got, "expected section to be equal")
 	}
 
 	err = book.Close()
-	assert.NoError(t, err)
-	assert.Nil(t, book.buf)
-	assert.Nil(t, book.sectionBoundaries)
-	assert.Nil(t, book.sections)
-	assert.Nil(t, book.blankouts)
+	require.NoError(t, err)
+	require.Nil(t, book.buf)
+	require.Nil(t, book.sectionBoundaries)
+	require.Nil(t, book.sections)
+	require.Nil(t, book.blankouts)
 }

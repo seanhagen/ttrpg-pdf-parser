@@ -1,0 +1,12 @@
+============================================================
+CYPHER: {{.Name}} ( Level: {{.Level}} )
+------------------------------
+Internal: {{ if ne .Internal "" }}{{.Internal}}{{else}}〰{{ end }}
+Usable: {{ if ne .Usable ""}}{{.Usable}}{{else}}〰{{end}}
+Wearable: {{ if ne .Wearable ""}}{{.Wearable}}{{else}}〰{{end}}
+Effect:
+
+{{.Effect}}
+
+============================================================
+

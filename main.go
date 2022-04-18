@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/seanhagen/numenera/cmd"
+import "github.com/seanhagen/ttrpg-pdf-parser/cmd"
 
 func main() {
 	cmd.Execute()
@@ -93,22 +93,6 @@ func main() {
 
 	fmt.Printf("got %v cyphers, and %v artifacts!\n", len(cyphers), len(artifacts))
 
-	for _, c := range cyphers {
-		fmt.Printf("CYPHER: %v ( Level: %v )\n------------------------------\n", c.Name, c.Level)
-
-		if c.Internal != "" {
-			fmt.Printf("Internal: %v\n", c.Internal)
-		}
-		if c.Usable != "" {
-			fmt.Printf("Usable: %v\n", c.Usable)
-		}
-		if c.Wearable != "" {
-			fmt.Printf("Wearable: %v\n", c.Wearable)
-		}
-
-		fmt.Printf("--------------------\n")
-		fmt.Printf("Effect:\n%v\n\n\n", c.Effect)
-	}
 
 	for _, a := range artifacts {
 		fmt.Printf("ARTIFACT: %v ( Level %v)\n------------------------------\n", a.Name, a.Level)

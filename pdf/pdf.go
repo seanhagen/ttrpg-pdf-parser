@@ -82,6 +82,9 @@ func (b *Book) Read() error {
 		}
 	}
 
+	// sep := "=============================="
+	// fmt.Printf("book:\n\n%v\n\n%v\n\n%v\n\n", sep, printBuf.String(), sep)
+
 	b.buf = buf
 	return nil
 }

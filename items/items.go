@@ -16,3 +16,7 @@ const (
 	fixNumberReplaceWith  = "($1.$2)"
 	fixSpacesWith         = "$1 $2"
 )
+
+func fixSpaces(s string) string {
+	return fixSpacesRE.ReplaceAllString(s, fixSpacesWith)
+}

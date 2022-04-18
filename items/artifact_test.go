@@ -33,7 +33,7 @@ func TestItems_NewArtifact(t *testing.T) {
 	for i, x := range tests {
 		tt := x
 		t.Run(fmt.Sprintf("test %v", i+1), func(t *testing.T) {
-			got := NewAritfact(tt.Input, blankouts)
+			got := NewArtifact(tt.Input, blankouts)
 			assert.Equal(t, tt.Expect, got)
 		})
 	}

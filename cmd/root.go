@@ -22,7 +22,29 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/seanhagen/ttrpg-pdf-parser/pdf"
 	"github.com/spf13/cobra"
+)
+
+var (
+	pdfPath       string
+	blankoutsPath string
+	sectionsPath  string
+	fixesPath     string
+
+	output io.Writer
+
+	outputFilePath string
+	outputFile     *os.File
+
+	outputToStdout bool
+	outputToFile   bool
+
+	book *pdf.Book
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -35,9 +57,62 @@ var rootCmd = &cobra.Command{
 	// Cobra is a CLI library for Go that empowers applications.
 	// This application is a tool to generate the needed files
 	// to quickly create a Cobra application.`,
+
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
+
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		writers := []io.Writer{}
+
+		if outputToFile {
+			f, err := os.OpenFile(outputFilePath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+			if err != nil {
+				return fmt.Errorf("unable to open output file: %w", err)
+			}
+			outputFile = f
+			writers = append(writers, f)
+		}
+
+		if outputToStdout {
+			writers = append(writers, os.Stdout)
+		}
+
+		output = io.MultiWriter(writers...)
+
+		var err error
+		book, err = pdf.OpenBook(pdfPath)
+		if err != nil {
+			return fmt.Errorf("unable to open book '%v', error: %w", pdfPath, err)
+		}
+
+		err = book.LoadBlankoutsFromFile(blankoutsPath)
+		if err != nil {
+			return fmt.Errorf("unable to load blankouts: %w", err)
+		}
+
+		err = book.LoadSectionBoundaries(sectionsPath)
+		if err != nil {
+			return fmt.Errorf("unable to load boundaries: %w", err)
+		}
+
+		err = book.LoadSectionFixes(fixesPath)
+		if err != nil {
+			return fmt.Errorf("unable to load section fixes: %w", err)
+		}
+
+		err = book.Read()
+		if err != nil {
+			return fmt.Errorf("unable to read PDF: %w", err)
+		}
+
+		err = book.ParseSections()
+		if err != nil {
+			return fmt.Errorf("unable to parse sections: %w", err)
+		}
+
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -47,15 +122,28 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().
+		StringVar(&pdfPath, "pdf", "", "path to PDF file to parse")
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.numenera.yaml)")
+	rootCmd.PersistentFlags().
+		StringVar(&blankoutsPath, "blankouts", "", "path to TXT file containing lines to remove from PDF text")
 
-	// rootCmd.PersistentFlags().StringVar()
+	rootCmd.PersistentFlags().
+		StringVar(&sectionsPath, "sections", "", "path to JSON file containing section boundaries")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().
+		StringVar(&fixesPath, "fixes", "", "path to file containing section fixes")
+
+	rootCmd.PersistentFlags().
+		BoolVar(&outputToStdout, "stdout", true, "should the resources be printed to STDOUT (default: yes)")
+
+	rootCmd.PersistentFlags().
+		BoolVar(&outputToFile, "file", false, "should the resources be written to a file (default: no)")
+
+	rootCmd.PersistentFlags().
+		StringVar(&outputFilePath, "file-path", "./output.txt", "path to a file to write the resources to (default: output.txt)")
+
+	// // Cobra also supports local flags, which will only run
+	// // when this action is called directly.
+	// rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

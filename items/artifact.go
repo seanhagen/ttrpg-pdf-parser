@@ -38,8 +38,8 @@ type Artifact struct {
 	Depletion string
 }
 
-// NewAritfact ...
-func NewAritfact(line string, blankouts []string) *Artifact {
+// NewArtifact ...
+func NewArtifact(line string, blankouts []string) *Artifact {
 	a := &Artifact{}
 
 	line = strings.ReplaceAll(line, "\n", " ")
