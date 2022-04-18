@@ -1,17 +1,13 @@
 package pdf
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
 )
-
-// SectionFix ...
-type SectionFix struct {
-	Match *regexp.Regexp
-	Fix   string
-}
 
 // SectionFixList ...
 type SectionFixList []SectionFix
@@ -27,14 +23,28 @@ const (
 	unknownSection = "unknown section"
 )
 
+// LoadSectionFixes ...
+func (b *Book) LoadSectionFixes(path string) error {
+	f, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("unable to read section fixes: %w", err)
+	}
+
+	err = json.Unmarshal(f, &b.sectionFixes)
+	if err != nil {
+		return fmt.Errorf("unable to unmarshal section fixes: %w", err)
+	}
+	return nil
+}
+
 // ParseSections ...
-func (b *Book) ParseSections(fixes SectionFixList) error {
+func (b *Book) ParseSections() error {
 	if b.buf == nil {
 		return fmt.Errorf("buffer is nil, have you called Read()?")
 	}
 	txt := b.buf.String()
 
-	for _, f := range fixes {
+	for _, f := range b.sectionFixes {
 		txt = f.Match.ReplaceAllString(txt, f.Fix)
 	}
 

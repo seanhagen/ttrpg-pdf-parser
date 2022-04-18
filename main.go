@@ -1,35 +1,37 @@
+/*
+Copyright © 2022 Sean Patrick Hagen <sean.hagen@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
 package main
 
-import (
-	"flag"
-	"fmt"
-	"os"
-	"regexp"
+import "github.com/seanhagen/numenera/cmd"
 
-	"github.com/seanhagen/numenera/items"
-	"github.com/seanhagen/numenera/pdf"
-)
-
-var pdfPathFlag = flag.String("pdf", "", "path to the PDF file to parse")
-
-var fixes = pdf.SectionFixList{
-	{
-		Match: regexp.MustCompile(`([^\s.].*?)?📒+`),
-		Fix:   "\n\n$1⏱\n",
-	},
-	{
-		Match: regexp.MustCompile(`[^.]?📒\s*`),
-		Fix:   " ",
-	},
-	{
-		Match: regexp.MustCompile(`\s+⏱\s*`),
-		Fix:   " ",
-	},
-	{
-		Match: regexp.MustCompile(`⏱\s*`),
-		Fix:   "\n",
-	},
+func main() {
+	cmd.Execute()
 }
+
+/*
+var pdfPathFlag = flag.String("pdf", "", "path to the PDF file to parse")
+var blankoutsPathFlag = flag.String("blankouts", "", "path to file containing lines to remove from PDF text")
+var sectionsPathFlag = flag.String("boundaries", "", "path to file containing section boundaries")
+var sectionFixesPathFlag = flag.String("section-fixes", "", "path to file containing section fixes")
 
 func init() {
 	flag.Parse()
@@ -38,10 +40,29 @@ func init() {
 func main() {
 	if pdfPathFlag == nil || *pdfPathFlag == "" {
 		fmt.Printf("use -pdf to specify the PDF to parse!\n")
+		flag.Usage()
 		os.Exit(1)
 	}
 
-	book, err := prepareBook(*pdfPathFlag)
+	if blankoutsPathFlag == nil || *blankoutsPathFlag == "" {
+		fmt.Printf("use -blankouts to specify the path to a file containing lines to remove")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if sectionsPathFlag == nil || *sectionsPathFlag == "" {
+		fmt.Printf("use -boundaries to specify the path to a file containing section boundaries")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if sectionFixesPathFlag == nil || *sectionFixesPathFlag == "" {
+		fmt.Printf("use -section-fixes to specify the path to a file containing section fixes")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	book, err := prepareBook(*pdfPathFlag, *blankoutsPathFlag, *sectionsPathFlag, *sectionFixesPathFlag)
 	if err != nil {
 		fmt.Printf("Unable to get book '%v', error: %v\n", *pdfPathFlag, err)
 		os.Exit(1)
@@ -95,20 +116,25 @@ func main() {
 	}
 }
 
-func prepareBook(path string) (*pdf.Book, error) {
-	book, err := pdf.OpenBook(path)
+func prepareBook(pdfPath, blankoutPath, sectionPath, sectionFixPath string) (*pdf.Book, error) {
+	book, err := pdf.OpenBook(pdfPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to open book '%v', error: %w", path, err)
+		return nil, fmt.Errorf("unable to open book '%v', error: %w", pdfPath, err)
 	}
 
-	err = book.LoadBlankoutsFromFile("./blankouts.txt")
+	err = book.LoadBlankoutsFromFile(blankoutPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load blankouts: %w", err)
 	}
 
-	err = book.LoadSectionBoundaries("./boundaries.json")
+	err = book.LoadSectionBoundaries(sectionPath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to load boundaries: %w", err)
+		return nil, fmt.Errorf("unable to load boundaries: %w", err)
+	}
+
+	err = book.LoadSectionFixes(sectionFixPath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load section fixes: %w", err)
 	}
 
 	err = book.Read()
@@ -116,10 +142,12 @@ func prepareBook(path string) (*pdf.Book, error) {
 		return nil, fmt.Errorf("unable to read PDF: %w", err)
 	}
 
-	err = book.ParseSections(fixes)
+	err = book.ParseSections()
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse sections: %w", err)
 	}
 
 	return book, nil
 }
+
+*/

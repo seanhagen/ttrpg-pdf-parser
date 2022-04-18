@@ -35,9 +35,8 @@ func TestPdf_Basics(t *testing.T) {
 	}
 	assert.Equal(t, book.sectionBoundaries, expectBoundaries, "expected boundaries to be equal")
 
-	err = book.Read()
+	err = book.LoadSectionFixes("testdata/fixes.json")
 	assert.NoError(t, err)
-	assert.NotNil(t, book.buf)
 
 	fixes := SectionFixList{
 		{
@@ -58,7 +57,13 @@ func TestPdf_Basics(t *testing.T) {
 		},
 	}
 
-	err = book.ParseSections(fixes)
+	assert.Equal(t, fixes, book.sectionFixes)
+
+	err = book.Read()
+	assert.NoError(t, err)
+	assert.NotNil(t, book.buf)
+
+	err = book.ParseSections()
 	assert.NoError(t, err)
 
 	expectSections := map[string]string{

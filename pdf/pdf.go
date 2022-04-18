@@ -19,7 +19,9 @@ type Book struct {
 
 	sectionBoundaries sectionList
 	sections          map[string]string
-	blankouts         []string
+	sectionFixes      SectionFixList
+
+	blankouts []string
 }
 
 // OpenBook ...
